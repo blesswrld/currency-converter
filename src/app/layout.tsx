@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import Header from "@/components/Header";
 import "./globals.css";
 
 // Инициализируем шрифт Inter с нужными настройками
@@ -35,6 +36,7 @@ export default function RootLayout({
     return (
         <html lang="ru">
             <body className={`${inter.className} antialiased`}>
+                <Header />
                 {children}
                 <Toaster richColors position="top-center" theme="dark" />
             </body>
