@@ -1,6 +1,7 @@
 "use client"; // Директива для использования хуков React на клиенте
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 // Список валют для селекторов
 const CURRENCIES = ["USD", "EUR", "RUB", "GBP", "JPY", "CNY", "KZT"];
@@ -106,8 +107,15 @@ export default function CurrencyConverter() {
             return;
         }
         const numericValue = Number(value);
-        // Проверяем, что число не превышает максимальный лимит
-        if (numericValue >= 0 && numericValue <= MAX_ALLOWED_AMOUNT) {
+
+        // Если значение превышает лимит, показываем тостер и выходим
+        if (numericValue > MAX_ALLOWED_AMOUNT) {
+            toast.error("Превышено максимально допустимое значение.");
+            return;
+        }
+
+        // Обновляем состояние только если значение в допустимых пределах
+        if (numericValue >= 0) {
             setAmount(numericValue);
         }
     };
