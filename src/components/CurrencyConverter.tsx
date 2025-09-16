@@ -3,12 +3,19 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-// Список валют для селекторов
-const CURRENCIES = ["USD", "EUR", "RUB", "GBP", "JPY", "CNY", "KZT"];
-// Константа для максимального значения
-const MAX_ALLOWED_AMOUNT = 1_000_000_000_000_000; // 1 квадриллион
+// Связываем код валюты с кодом страны для получения флага
+const CURRENCY_DATA = [
+    { code: "USD", country: "us", name: "US Dollar" },
+    { code: "EUR", country: "eu", name: "Euro" },
+    { code: "RUB", country: "ru", name: "Russian Ruble" },
+    { code: "GBP", country: "gb", name: "British Pound" },
+    { code: "JPY", country: "jp", name: "Japanese Yen" },
+    { code: "CNY", country: "cn", name: "Chinese Yuan" },
+    { code: "KZT", country: "kz", name: "Kazakhstani Tenge" },
+];
 
-// Компонент иконки для кнопки "поменять местами"
+const MAX_ALLOWED_AMOUNT = 1_000_000_000_000_000;
+
 const SwapIcon = () => (
     <svg
         width="16"
@@ -28,6 +35,58 @@ const SwapIcon = () => (
     </svg>
 );
 
+// Компонент для выбора валюты с флагом
+interface CurrencySelectProps {
+    id: string;
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+}
+
+const CurrencySelect = ({
+    id,
+    label,
+    value,
+    onChange,
+}: CurrencySelectProps) => {
+    const selectedCurrency = CURRENCY_DATA.find((c) => c.code === value);
+
+    return (
+        <div>
+            <label
+                htmlFor={id}
+                className="block text-sm font-medium text-slate-400 mb-1.5"
+            >
+                {label}
+            </label>
+            <div className="relative">
+                {selectedCurrency && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={`https://flagcdn.com/w40/${selectedCurrency.country.toLowerCase()}.png`}
+                        alt={`${selectedCurrency.name} flag`}
+                        // Стили для позиционирования флага внутри поля
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-auto pointer-events-none"
+                    />
+                )}
+                <select
+                    id={id}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    // Добавляем отступ слева, чтобы текст не налезал на флаг
+                    className="w-full bg-[#2D3748] border-transparent rounded-lg pl-11 pr-4 py-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1em] bg-[url('data:image/svg+xml,%3csvg%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%20fill%3d%22none%22%20viewBox%3d%220%200%2020%2020%22%3e%3cpath%20stroke%3d%22%2364748b%22%20stroke-linecap%3d%22round%22%20stroke-linejoin%3d%22round%22%20stroke-width%3d%221.5%22%20d%3d%22m6%208%204%204%204-4%22/%3e%3c/svg%3e')]"
+                >
+                    {CURRENCY_DATA.map((curr) => (
+                        <option key={curr.code} value={curr.code}>
+                            {curr.code} - {curr.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </div>
+    );
+};
+
 export default function CurrencyConverter() {
     // Состояния компонента
     const [amount, setAmount] = useState(1);
@@ -45,24 +104,20 @@ export default function CurrencyConverter() {
             setError(null);
             try {
                 const apiKey = process.env.NEXT_PUBLIC_EXCHANGE_RATE_API_KEY;
-                if (!apiKey) {
+                if (!apiKey)
                     throw new Error(
                         "API ключ не найден. Проверьте .env.local файл."
                     );
-                }
                 const response = await fetch(
                     `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`
                 );
-
-                if (!response.ok) {
+                if (!response.ok)
                     throw new Error(
                         "Сетевая ошибка при получении данных о курсах."
                     );
-                }
                 const data = await response.json();
-                if (data.result === "error") {
+                if (data.result === "error")
                     throw new Error(`Ошибка API: ${data["error-type"]}`);
-                }
                 setRates(data.conversion_rates);
             } catch (err) {
                 setError(
@@ -149,26 +204,15 @@ export default function CurrencyConverter() {
                             className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                         />
                     </div>
-                    <div>
-                        <label
-                            htmlFor="from"
-                            className="block text-sm font-medium text-slate-400 mb-1.5"
-                        >
-                            Из
-                        </label>
-                        <select
-                            id="from"
-                            value={fromCurrency}
-                            onChange={(e) => setFromCurrency(e.target.value)}
-                            className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1em] bg-[url('data:image/svg+xml,%3csvg%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%20fill%3d%22none%22%20viewBox%3d%220%200%2020%2020%22%3e%3cpath%20stroke%3d%22%2364748b%22%20stroke-linecap%3d%22round%22%20stroke-linejoin%3d%22round%22%20stroke-width%3d%221.5%22%20d%3d%22m6%208%204%204%204-4%22/%3e%3c/svg%3e')]"
-                        >
-                            {CURRENCIES.map((curr) => (
-                                <option key={curr} value={curr}>
-                                    {curr}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+
+                    {/* --- ИСПОЛЬЗУЕМ КОМПОНЕНТ --- */}
+                    <CurrencySelect
+                        id="from"
+                        label="Из"
+                        value={fromCurrency}
+                        onChange={setFromCurrency}
+                    />
+
                     <button
                         onClick={handleSwap}
                         title="Поменять валюты местами"
@@ -178,26 +222,13 @@ export default function CurrencyConverter() {
                     </button>
                 </div>
 
-                <div>
-                    <label
-                        htmlFor="to"
-                        className="block text-sm font-medium text-slate-400 mb-1.5"
-                    >
-                        В
-                    </label>
-                    <select
-                        id="to"
-                        value={toCurrency}
-                        onChange={(e) => setToCurrency(e.target.value)}
-                        className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1em] bg-[url('data:image/svg+xml,%3csvg%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%20fill%3d%22none%22%20viewBox%3d%220%200%2020%2020%22%3e%3cpath%20stroke%3d%22%2364748b%22%20stroke-linecap%3d%22round%22%20stroke-linejoin%3d%22round%22%20stroke-width%3d%221.5%22%20d%3d%22m6%208%204%204%204-4%22/%3e%3c/svg%3e')]"
-                    >
-                        {CURRENCIES.map((curr) => (
-                            <option key={curr} value={curr}>
-                                {curr}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {/* --- ИСПОЛЬЗУЕМ КОМПОНЕНТ ЕЩЕ РАЗ --- */}
+                <CurrencySelect
+                    id="to"
+                    label="В"
+                    value={toCurrency}
+                    onChange={setToCurrency}
+                />
             </div>
             <div className="text-center pt-2 min-h-[76px]">
                 {isLoading ? (
