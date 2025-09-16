@@ -109,7 +109,7 @@ export default function RatesClient({
                         <div className="text-slate-400">Обновление...</div>
                     </div>
                 )}
-                <table className="w-full min-w-[400px]">
+                <table className="w-full min-w-[200px] lg:min-w-[400px]">
                     <thead>
                         <tr className="border-b border-slate-600">
                             <th className="p-4 text-left text-slate-400 font-semibold">
