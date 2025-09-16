@@ -1,18 +1,27 @@
-"use client"; // Директива для использования хуков React на клиенте
+"use client";
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import HistoryChart from "@/components/HistoryChart";
 
-// Связываем код валюты с кодом страны для получения флага
-const CURRENCY_DATA = [
-    { code: "USD", country: "us", name: "US Dollar" },
-    { code: "EUR", country: "eu", name: "Euro" },
-    { code: "RUB", country: "ru", name: "Russian Ruble" },
-    { code: "GBP", country: "gb", name: "British Pound" },
-    { code: "JPY", country: "jp", name: "Japanese Yen" },
-    { code: "CNY", country: "cn", name: "Chinese Yuan" },
-    { code: "KZT", country: "kz", name: "Kazakhstani Tenge" },
-];
+// Типизация для объекта валюты
+type Currency = {
+    code: string;
+    name: string;
+    country?: string;
+};
+
+// Карта для сопоставления валют и флагов
+const COUNTRY_CODE_MAP: Record<string, string> = {
+    USD: "us",
+    EUR: "eu",
+    RUB: "ru",
+    GBP: "gb",
+    JPY: "jp",
+    CNY: "cn",
+    KZT: "kz",
+};
 
 const MAX_ALLOWED_AMOUNT = 1_000_000_000_000_000;
 
@@ -35,21 +44,39 @@ const SwapIcon = () => (
     </svg>
 );
 
-// Компонент для выбора валюты с флагом
-interface CurrencySelectProps {
-    id: string;
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-}
+// Компонент-заглушка для валют без флага
+const GenericCurrencyIcon = ({ className }: { className?: string }) => (
+    <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+        <path d="M12 18V6" />
+    </svg>
+);
 
+// Компонент для выбора валюты с флагом
 const CurrencySelect = ({
     id,
     label,
     value,
     onChange,
-}: CurrencySelectProps) => {
-    const selectedCurrency = CURRENCY_DATA.find((c) => c.code === value);
+    currencies,
+}: {
+    id: string;
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    currencies: Currency[];
+}) => {
+    const countryCode = COUNTRY_CODE_MAP[value];
 
     return (
         <div>
@@ -60,14 +87,16 @@ const CurrencySelect = ({
                 {label}
             </label>
             <div className="relative">
-                {selectedCurrency && (
+                {/* Тернарный оператор для отображения заглушки */}
+                {countryCode ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                        src={`https://flagcdn.com/w40/${selectedCurrency.country.toLowerCase()}.png`}
-                        alt={`${selectedCurrency.name} flag`}
-                        // Стили для позиционирования флага внутри поля
+                        src={`https://flagcdn.com/w40/${countryCode}.png`}
+                        alt=""
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-auto pointer-events-none"
                     />
+                ) : (
+                    <GenericCurrencyIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 pointer-events-none" />
                 )}
                 <select
                     id={id}
@@ -76,7 +105,7 @@ const CurrencySelect = ({
                     // Добавляем отступ слева, чтобы текст не налезал на флаг
                     className="w-full bg-[#2D3748] border-transparent rounded-lg pl-11 pr-4 py-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1em] bg-[url('data:image/svg+xml,%3csvg%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%20fill%3d%22none%22%20viewBox%3d%220%200%2020%2020%22%3e%3cpath%20stroke%3d%22%2364748b%22%20stroke-linecap%3d%22round%22%20stroke-linejoin%3d%22round%22%20stroke-width%3d%221.5%22%20d%3d%22m6%208%204%204%204-4%22/%3e%3c/svg%3e')]"
                 >
-                    {CURRENCY_DATA.map((curr) => (
+                    {currencies.map((curr) => (
                         <option key={curr.code} value={curr.code}>
                             {curr.code} - {curr.name}
                         </option>
@@ -87,38 +116,69 @@ const CurrencySelect = ({
     );
 };
 
+// ---- ОСНОВНОЙ КОМПОНЕНТ ----
 export default function CurrencyConverter() {
-    // Состояния компонента
     const [amount, setAmount] = useState(1);
+
+    // --- Инициализируем состояние безопасными значениями по умолчанию ---
     const [fromCurrency, setFromCurrency] = useState("USD");
     const [toCurrency, setToCurrency] = useState("RUB");
+
+    const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [rates, setRates] = useState<Record<string, number>>({});
     const [result, setResult] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Эффект для загрузки курсов валют при первом рендере
+    // --- Этот useEffect сохраняет в localStorage ---
     useEffect(() => {
-        const fetchRates = async () => {
+        // Проверяем, что мы на клиенте
+        if (typeof window !== "undefined") {
+            localStorage.setItem("fromCurrency", fromCurrency);
+            localStorage.setItem("toCurrency", toCurrency);
+        }
+    }, [fromCurrency, toCurrency]);
+
+    // --- Этот useEffect читает из localStorage и загружает данные ---
+    useEffect(() => {
+        // Сначала восстанавливаем значения из localStorage
+        const savedFrom = localStorage.getItem("fromCurrency");
+        const savedTo = localStorage.getItem("toCurrency");
+        if (savedFrom) setFromCurrency(savedFrom);
+        if (savedTo) setToCurrency(savedTo);
+
+        // Затем загружаем данные API
+        const fetchData = async () => {
             setIsLoading(true);
             setError(null);
             try {
                 const apiKey = process.env.NEXT_PUBLIC_EXCHANGE_RATE_API_KEY;
-                if (!apiKey)
-                    throw new Error(
-                        "API ключ не найден. Проверьте .env.local файл."
-                    );
-                const response = await fetch(
-                    `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`
+                if (!apiKey) throw new Error("API ключ не найден.");
+
+                const [codesRes, ratesRes] = await Promise.all([
+                    fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/codes`),
+                    fetch(
+                        `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`
+                    ),
+                ]);
+
+                if (!codesRes.ok || !ratesRes.ok)
+                    throw new Error("Сетевая ошибка.");
+
+                const codesData = await codesRes.json();
+                const ratesData = await ratesRes.json();
+
+                if (
+                    codesData.result === "error" ||
+                    ratesData.result === "error"
+                )
+                    throw new Error("Ошибка API.");
+
+                const currencyList = codesData.supported_codes.map(
+                    ([code, name]: [string, string]) => ({ code, name })
                 );
-                if (!response.ok)
-                    throw new Error(
-                        "Сетевая ошибка при получении данных о курсах."
-                    );
-                const data = await response.json();
-                if (data.result === "error")
-                    throw new Error(`Ошибка API: ${data["error-type"]}`);
-                setRates(data.conversion_rates);
+                setCurrencies(currencyList);
+                setRates(ratesData.conversion_rates);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -129,9 +189,9 @@ export default function CurrencyConverter() {
                 setIsLoading(false);
             }
         };
-
-        fetchRates();
-    }, []); // Пустой массив зависимостей гарантирует вызов только один раз
+        fetchData();
+        // Пустой массив зависимостей, чтобы этот эффект выполнился один раз при монтировании
+    }, []);
 
     // Эффект для пересчета результата при изменении входных данных
     useEffect(() => {
@@ -168,11 +228,7 @@ export default function CurrencyConverter() {
             toast.error("Превышено максимально допустимое значение.");
             return;
         }
-
-        // Обновляем состояние только если значение в допустимых пределах
-        if (numericValue >= 0) {
-            setAmount(numericValue);
-        }
+        if (numericValue >= 0) setAmount(numericValue);
     };
 
     return (
@@ -204,13 +260,12 @@ export default function CurrencyConverter() {
                             className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                         />
                     </div>
-
-                    {/* --- ИСПОЛЬЗУЕМ КОМПОНЕНТ --- */}
                     <CurrencySelect
                         id="from"
                         label="Из"
                         value={fromCurrency}
                         onChange={setFromCurrency}
+                        currencies={currencies}
                     />
 
                     <button
@@ -222,34 +277,60 @@ export default function CurrencyConverter() {
                     </button>
                 </div>
 
-                {/* --- ИСПОЛЬЗУЕМ КОМПОНЕНТ ЕЩЕ РАЗ --- */}
                 <CurrencySelect
                     id="to"
                     label="В"
                     value={toCurrency}
                     onChange={setToCurrency}
+                    currencies={currencies}
                 />
             </div>
-            <div className="text-center pt-2 min-h-[76px]">
+
+            <div className="text-center pt-2 min-h-[100px]">
                 {isLoading ? (
                     <div className="flex items-center justify-center h-full animate-pulse text-slate-400">
-                        Загрузка курсов...
+                        Загрузка данных...
                     </div>
-                ) : result !== null ? (
-                    <div className="flex flex-col justify-center h-full">
-                        <p className="text-base text-slate-400 break-words">
-                            {amount.toLocaleString("ru-RU")} {fromCurrency} =
-                        </p>
-                        <p className="text-4xl font-bold text-cyan-400 break-words">
-                            {result.toLocaleString("ru-RU", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })}{" "}
-                            {toCurrency}
-                        </p>
-                    </div>
-                ) : null}
+                ) : (
+                    result !== null && (
+                        // key={result} заставляет анимацию проигрываться при каждом изменении результата
+                        <motion.div
+                            key={result}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <p className="text-base text-slate-400 break-words">
+                                {amount.toLocaleString("ru-RU")} {fromCurrency}{" "}
+                                =
+                            </p>
+                            <p className="text-4xl font-bold text-cyan-400 break-words">
+                                {result.toLocaleString("ru-RU", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 4,
+                                })}{" "}
+                                {toCurrency}
+                            </p>
+                            {/* --- Обратный курс --- */}
+                            {amount > 0 && result > 0 && (
+                                <p className="text-sm text-slate-500 mt-1">
+                                    1 {toCurrency} ={" "}
+                                    {(amount / result).toFixed(4)}{" "}
+                                    {fromCurrency}
+                                </p>
+                            )}
+                        </motion.div>
+                    )
+                )}
             </div>
+
+            {/* --- График истории --- */}
+            {!isLoading && (
+                <HistoryChart
+                    fromCurrency={fromCurrency}
+                    toCurrency={toCurrency}
+                />
+            )}
         </div>
     );
 }
