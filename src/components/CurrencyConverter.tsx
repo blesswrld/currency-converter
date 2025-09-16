@@ -4,6 +4,13 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import HistoryChart from "@/components/HistoryChart";
+// Импорты для кастомного Select
+import * as Select from "@radix-ui/react-select";
+import {
+    CheckIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
+} from "@radix-ui/react-icons";
 
 // Типизация для объекта валюты
 type Currency = {
@@ -14,13 +21,188 @@ type Currency = {
 
 // Карта для сопоставления валют и флагов
 const COUNTRY_CODE_MAP: Record<string, string> = {
-    USD: "us",
-    EUR: "eu",
-    RUB: "ru",
-    GBP: "gb",
-    JPY: "jp",
+    // A
+    AED: "ae",
+    AFN: "af",
+    ALL: "al",
+    AMD: "am",
+    ANG: "sx",
+    AOA: "ao",
+    ARS: "ar",
+    AUD: "au",
+    AWG: "aw",
+    AZN: "az",
+    // B
+    BAM: "ba",
+    BBD: "bb",
+    BDT: "bd",
+    BGN: "bg",
+    BHD: "bh",
+    BIF: "bi",
+    BMD: "bm",
+    BND: "bn",
+    BOB: "bo",
+    BRL: "br",
+    BSD: "bs",
+    BTN: "bt",
+    BWP: "bw",
+    BYN: "by",
+    BZD: "bz",
+    // C
+    CAD: "ca",
+    CDF: "cd",
+    CHF: "ch",
+    CLP: "cl",
     CNY: "cn",
+    COP: "co",
+    CRC: "cr",
+    CUP: "cu",
+    CVE: "cv",
+    CZK: "cz",
+    // D
+    DJF: "dj",
+    DKK: "dk",
+    DOP: "do",
+    DZD: "dz",
+    // E
+    EGP: "eg",
+    ERN: "er",
+    ETB: "et",
+    EUR: "eu",
+    // F
+    FJD: "fj",
+    FKP: "fk",
+    FOK: "fo",
+    // G
+    GBP: "gb",
+    GEL: "ge",
+    GGP: "gg",
+    GHS: "gh",
+    GIP: "gi",
+    GMD: "gm",
+    GNF: "gn",
+    GTQ: "gt",
+    GYD: "gy",
+    // H
+    HKD: "hk",
+    HNL: "hn",
+    HTG: "ht",
+    HUF: "hu",
+    // I
+    IDR: "id",
+    ILS: "il",
+    IMP: "im",
+    INR: "in",
+    IQD: "iq",
+    IRR: "ir",
+    ISK: "is",
+    // J
+    JEP: "je",
+    JMD: "jm",
+    JOD: "jo",
+    JPY: "jp",
+    // K
+    KES: "ke",
+    KGS: "kg",
+    KHR: "kh",
+    KID: "ki",
+    KMF: "km",
+    KRW: "kr",
+    KWD: "kw",
+    KYD: "ky",
     KZT: "kz",
+    // L
+    LAK: "la",
+    LBP: "lb",
+    LKR: "lk",
+    LRD: "lr",
+    LSL: "ls",
+    LYD: "ly",
+    // M
+    MAD: "ma",
+    MDL: "md",
+    MGA: "mg",
+    MKD: "mk",
+    MMK: "mm",
+    MNT: "mn",
+    MOP: "mo",
+    MRU: "mr",
+    MUR: "mu",
+    MVR: "mv",
+    MWK: "mw",
+    MXN: "mx",
+    MYR: "my",
+    MZN: "mz",
+    // N
+    NAD: "na",
+    NGN: "ng",
+    NIO: "ni",
+    NOK: "no",
+    NPR: "np",
+    NZD: "nz",
+    // O
+    OMR: "om",
+    // P
+    PAB: "pa",
+    PEN: "pe",
+    PGK: "pg",
+    PHP: "ph",
+    PKR: "pk",
+    PLN: "pl",
+    PYG: "py",
+    // Q
+    QAR: "qa",
+    // R
+    RON: "ro",
+    RSD: "rs",
+    RUB: "ru",
+    RWF: "rw",
+    // S
+    SAR: "sa",
+    SBD: "sb",
+    SCR: "sc",
+    SDG: "sd",
+    SEK: "se",
+    SGD: "sg",
+    SHP: "sh",
+    SLE: "sl",
+    SOS: "so",
+    SRD: "sr",
+    SSP: "ss",
+    STN: "st",
+    SYP: "sy",
+    SZL: "sz",
+    // T
+    THB: "th",
+    TJS: "tj",
+    TMT: "tm",
+    TND: "tn",
+    TOP: "to",
+    TRY: "tr",
+    TTD: "tt",
+    TVD: "tv",
+    TWD: "tw",
+    TZS: "tz",
+    // U
+    UAH: "ua",
+    UGX: "ug",
+    USD: "us",
+    UYU: "uy",
+    UZS: "uz",
+    // V
+    VES: "ve",
+    VND: "vn",
+    VUV: "vu",
+    // W
+    WST: "ws",
+    // X
+    XCD: "ag",
+    // Y
+    YER: "ye",
+    // Z
+    ZAR: "za",
+    ZMW: "zm",
+    ZWL: "zw",
 };
 
 const MAX_ALLOWED_AMOUNT = 1_000_000_000_000_000;
@@ -64,59 +246,99 @@ const GenericCurrencyIcon = ({ className }: { className?: string }) => (
 
 // Компонент для выбора валюты с флагом
 const CurrencySelect = ({
-    id,
     label,
     value,
     onChange,
     currencies,
 }: {
-    id: string;
+    id: string; // id больше не нужен для select, но оставляем в props для совместимости
     label: string;
     value: string;
     onChange: (v: string) => void;
     currencies: Currency[];
 }) => {
+    const selectedCurrency = currencies.find((c) => c.code === value);
     const countryCode = COUNTRY_CODE_MAP[value];
 
     return (
         <div>
-            <label
-                htmlFor={id}
-                className="block text-sm font-medium text-slate-400 mb-1.5"
-            >
+            <label className="block text-sm font-medium text-slate-400 mb-1.5">
                 {label}
             </label>
-            <div className="relative">
-                {/* Тернарный оператор для отображения заглушки */}
-                {countryCode ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={`https://flagcdn.com/w40/${countryCode}.png`}
-                        alt=""
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-auto pointer-events-none"
-                    />
-                ) : (
-                    <GenericCurrencyIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 pointer-events-none" />
-                )}
-                <select
-                    id={id}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    // Добавляем отступ слева, чтобы текст не налезал на флаг
-                    className="w-full bg-[#2D3748] border-transparent rounded-lg pl-11 pr-4 py-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none appearance-none bg-no-repeat bg-[right_0.75rem_center] bg-[length:1em] bg-[url('data:image/svg+xml,%3csvg%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%20fill%3d%22none%22%20viewBox%3d%220%200%2020%2020%22%3e%3cpath%20stroke%3d%22%2364748b%22%20stroke-linecap%3d%22round%22%20stroke-linejoin%3d%22round%22%20stroke-width%3d%221.5%22%20d%3d%22m6%208%204%204%204-4%22/%3e%3c/svg%3e')]"
-                >
-                    {currencies.map((curr) => (
-                        <option key={curr.code} value={curr.code}>
-                            {curr.code} - {curr.name}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <Select.Root value={value} onValueChange={onChange}>
+                <Select.Trigger className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none flex items-center justify-between text-white text-left">
+                    <Select.Value asChild>
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            {countryCode ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={`https://flagcdn.com/w40/${countryCode}.png`}
+                                    alt=""
+                                    className="w-6 h-auto flex-shrink-0"
+                                />
+                            ) : (
+                                <GenericCurrencyIcon className="w-6 h-6 text-slate-400 flex-shrink-0" />
+                            )}
+                            <span className="truncate">
+                                {selectedCurrency
+                                    ? `${selectedCurrency.code} - ${selectedCurrency.name}`
+                                    : "Выбрать..."}
+                            </span>
+                        </div>
+                    </Select.Value>
+                    <Select.Icon className="text-slate-400">
+                        <ChevronDownIcon />
+                    </Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                    <Select.Content
+                        position="popper"
+                        sideOffset={5}
+                        className="bg-[#1E293B] rounded-lg shadow-lg z-50 overflow-hidden w-[var(--radix-select-trigger-width)]"
+                    >
+                        <Select.ScrollUpButton className="flex items-center justify-center h-[25px] cursor-default text-white">
+                            <ChevronUpIcon />
+                        </Select.ScrollUpButton>
+                        <Select.Viewport className="p-2 max-h-[256px]">
+                            {currencies.map((curr) => {
+                                const flagCode = COUNTRY_CODE_MAP[curr.code];
+                                return (
+                                    <Select.Item
+                                        key={curr.code}
+                                        value={curr.code}
+                                        className="flex items-center gap-3 p-2 rounded-md text-sm text-white relative select-none data-[highlighted]:bg-cyan-600 data-[highlighted]:outline-none cursor-pointer"
+                                    >
+                                        {flagCode ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={`https://flagcdn.com/w40/${flagCode}.png`}
+                                                alt=""
+                                                className="w-6 h-auto"
+                                            />
+                                        ) : (
+                                            <GenericCurrencyIcon className="w-6 h-6 text-slate-400" />
+                                        )}
+                                        <Select.ItemText>
+                                            {curr.code} - {curr.name}
+                                        </Select.ItemText>
+                                        <Select.ItemIndicator className="absolute right-2 inline-flex items-center">
+                                            <CheckIcon />
+                                        </Select.ItemIndicator>
+                                    </Select.Item>
+                                );
+                            })}
+                        </Select.Viewport>
+                        <Select.ScrollDownButton className="flex items-center justify-center h-[25px] cursor-default text-white">
+                            <ChevronDownIcon />
+                        </Select.ScrollDownButton>
+                    </Select.Content>
+                </Select.Portal>
+            </Select.Root>
         </div>
     );
 };
 
-// ---- ОСНОВНОЙ КОМПОНЕНТ ----
+// ---- ОСНОВНОЙ КОМПОНЕНТ (ЛОГИКА И КОММЕНТАРИИ НЕ ТРОНУТЫ) ----
 export default function CurrencyConverter() {
     const [amount, setAmount] = useState(1);
 
