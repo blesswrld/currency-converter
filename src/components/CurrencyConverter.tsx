@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 
 // Список валют для селекторов
 const CURRENCIES = ["USD", "EUR", "RUB", "GBP", "JPY", "CNY", "KZT"];
+// Константа для максимального значения
+const MAX_ALLOWED_AMOUNT = 1_000_000_000_000_000; // 1 квадриллион
 
 // Компонент иконки для кнопки "поменять местами"
 const SwapIcon = () => (
@@ -95,6 +97,21 @@ export default function CurrencyConverter() {
         setToCurrency(fromCurrency);
     };
 
+    // Функция-обработчик для контроля ввода суммы
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        // Позволяем очищать поле, приравнивая к 0
+        if (value === "") {
+            setAmount(0);
+            return;
+        }
+        const numericValue = Number(value);
+        // Проверяем, что число не превышает максимальный лимит
+        if (numericValue >= 0 && numericValue <= MAX_ALLOWED_AMOUNT) {
+            setAmount(numericValue);
+        }
+    };
+
     return (
         <div className="bg-[#1E293B] p-6 sm:p-8 rounded-2xl shadow-2xl space-y-6">
             <h1 className="text-2xl font-bold text-center text-white">
@@ -118,9 +135,9 @@ export default function CurrencyConverter() {
                             id="amount"
                             type="number"
                             value={amount}
-                            onChange={(e) =>
-                                setAmount(Number(e.target.value) || 0)
-                            }
+                            // Используем функцию и добавляем min атрибут
+                            onChange={handleAmountChange}
+                            min="0"
                             className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                         />
                     </div>
@@ -174,18 +191,17 @@ export default function CurrencyConverter() {
                     </select>
                 </div>
             </div>
-
-            <div className="text-center pt-2">
+            <div className="text-center pt-2 min-h-[76px]">
                 {isLoading ? (
-                    <div className="h-[76px] flex items-center justify-center animate-pulse text-slate-400">
+                    <div className="flex items-center justify-center h-full animate-pulse text-slate-400">
                         Загрузка курсов...
                     </div>
                 ) : result !== null ? (
-                    <div className="h-[76px]">
-                        <p className="text-base text-slate-400">
+                    <div className="flex flex-col justify-center h-full">
+                        <p className="text-base text-slate-400 break-words">
                             {amount.toLocaleString("ru-RU")} {fromCurrency} =
                         </p>
-                        <p className="text-4xl font-bold text-cyan-400">
+                        <p className="text-4xl font-bold text-cyan-400 break-words">
                             {result.toLocaleString("ru-RU", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
@@ -193,9 +209,7 @@ export default function CurrencyConverter() {
                             {toCurrency}
                         </p>
                     </div>
-                ) : (
-                    <div className="h-[76px]"></div>
-                )}
+                ) : null}
             </div>
         </div>
     );
