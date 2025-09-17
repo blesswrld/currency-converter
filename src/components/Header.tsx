@@ -31,7 +31,7 @@ export default function Header() {
     }, [isMenuOpen]);
 
     return (
-        <header className="w-full bg-[#1E293B] p-4 shadow-lg z-50 relative">
+        <header className="w-full bg-[#1E293B] p-6 shadow-lg z-50 relative">
             <nav className="max-w-4xl mx-auto flex items-center justify-center md:justify-center">
                 {/* Навигация для десктопа */}
                 <div className="hidden md:flex items-center justify-center gap-4 sm:gap-8">
