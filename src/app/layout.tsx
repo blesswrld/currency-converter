@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import Header from "@/components/Header";
@@ -13,19 +13,61 @@ const inter = Inter({
 
 // Определяем метаданные для всего приложения
 export const metadata: Metadata = {
+    // Основные метаданные
     title: "Конвертер Валют | Онлайн калькулятор курсов",
     description:
         "Быстрый и удобный онлайн-конвертер валют. Переводите доллары, евро, рубли и другие мировые валюты в реальном времени по актуальному курсу.",
     keywords:
         "конвертер валют, курс валют, обмен валют, калькулятор валют, онлайн, USD, EUR, RUB",
     authors: [{ name: "Tamerlan (blesswrld)" }],
-    // Иконки для вкладки браузера и PWA
+
+    // Ссылка на manifest.json для PWA
+    manifest: "/favicon/manifest.json",
+
+    // Иконки для всех платформ
     icons: {
-        icon: "/favicon.ico",
-        apple: "/apple-touch-icon.png",
+        // Стандартные иконки для браузеров
+        icon: [
+            { url: "/favicon/favicon.ico", sizes: "any" },
+            {
+                url: "/favicon/favicon-16x16.png",
+                type: "image/png",
+                sizes: "16x16",
+            },
+            {
+                url: "/favicon/favicon-32x32.png",
+                type: "image/png",
+                sizes: "32x32",
+            },
+        ],
+        // Иконки для Apple устройств
+        apple: [
+            { url: "/favicon/apple-icon-57x57.png", sizes: "57x57" },
+            { url: "/favicon/apple-icon-60x60.png", sizes: "60x60" },
+            { url: "/favicon/apple-icon-72x72.png", sizes: "72x72" },
+            { url: "/favicon/apple-icon-76x76.png", sizes: "76x76" },
+            { url: "/favicon/apple-icon-114x114.png", sizes: "114x114" },
+            { url: "/favicon/apple-icon-120x120.png", sizes: "120x120" },
+            { url: "/favicon/apple-icon-144x144.png", sizes: "144x144" },
+            { url: "/favicon/apple-icon-152x152.png", sizes: "152x152" },
+            { url: "/favicon/apple-icon-180x180.png", sizes: "180x180" },
+        ],
+        // Иконки для Android и других платформ
+        other: [
+            {
+                rel: "android-chrome-192x192",
+                url: "/favicon/android-icon-192x192.png",
+                sizes: "192x192",
+            },
+        ],
     },
-    // Цвет адресной строки в мобильных браузерах
-    // themeColor: "#0F172A",
+};
+
+// Экспорт для настроек viewport
+export const viewport: Viewport = {
+    themeColor: "#0F172A",
+    width: "device-width",
+    initialScale: 1,
 };
 
 export default function RootLayout({
