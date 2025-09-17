@@ -10,7 +10,7 @@ type Rates = Record<string, number>;
 const RateRow = ({ code, rate }: { code: string; rate: number }) => (
     <tr className="border-b border-slate-700 hover:bg-slate-800">
         <td className="p-4 flex items-center gap-3">
-            <CurrencyIcon code={code} className="w-8 h-8 flex-shrink-0" />
+            <CurrencyIcon code={code} className="w-8 h-8 flex-shrink-0 -mb-3" />
             <span className="font-medium text-white">{code}</span>
         </td>
         <td className="p-4 text-right font-mono text-white">
