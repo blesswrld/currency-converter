@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
-// Типизация для объекта криптовалюты
 type CryptoCoin = {
     id: string;
     symbol: string;
@@ -14,7 +13,6 @@ type CryptoCoin = {
     price_change_percentage_24h: number;
 };
 
-// Хелпер для форматирования больших чисел
 const formatMarketCap = (cap: number): string => {
     if (cap > 1_000_000_000_000) {
         return `${(cap / 1_000_000_000_000).toFixed(2)} трлн`;
@@ -38,7 +36,6 @@ export default function CryptoPage() {
             setIsLoading(true);
             setError(null);
             try {
-                // Используем бесплатное и популярное API от CoinGecko
                 const response = await fetch(
                     "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=25&page=1&sparkline=false"
                 );

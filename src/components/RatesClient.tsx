@@ -3,10 +3,8 @@
 import { useState, useEffect } from "react";
 import CurrencyIcon from "@/components/CurrencyIcon";
 
-// Типизация для объекта с курсами
 type Rates = Record<string, number>;
 
-// Компонент для отображения одной строки таблицы
 const RateRow = ({ code, rate }: { code: string; rate: number }) => (
     <tr className="border-b border-slate-700 hover:bg-slate-800">
         <td className="p-4 flex items-center gap-3">
@@ -25,7 +23,6 @@ interface RatesClientProps {
     allCurrencies: string[];
 }
 
-// Это наш клиентский компонент, который принимает начальные данные как props
 export default function RatesClient({
     initialBaseCurrency,
     initialRates,
@@ -34,12 +31,10 @@ export default function RatesClient({
     const [baseCurrency, setBaseCurrency] = useState(initialBaseCurrency);
     const [rates, setRates] = useState<Rates>(initialRates);
     const [allCurrencies] = useState<string[]>(initialAllCurrencies);
-    const [isLoading, setIsLoading] = useState(false); // Начальное состояние - не загрузка
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Этот useEffect теперь срабатывает только при смене базовой валюты
     useEffect(() => {
-        // Пропускаем первый рендер, так как данные уже есть
         if (baseCurrency === initialBaseCurrency) {
             return;
         }
@@ -103,7 +98,6 @@ export default function RatesClient({
             )}
 
             <div className="overflow-x-auto relative">
-                {/* Показываем оверлей загрузки поверх старых данных */}
                 {isLoading && (
                     <div className="absolute inset-0 bg-slate-800 bg-opacity-50 flex items-center justify-center z-10 rounded-b-2xl">
                         <div className="text-slate-400">Обновление...</div>

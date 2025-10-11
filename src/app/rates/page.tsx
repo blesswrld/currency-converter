@@ -1,6 +1,5 @@
 import RatesClient from "@/components/RatesClient";
 
-// Эта функция теперь async, она выполняется на сервере
 async function getInitialRates() {
     try {
         const apiKey = process.env.NEXT_PUBLIC_EXCHANGE_RATE_API_KEY;
@@ -9,7 +8,6 @@ async function getInitialRates() {
         const response = await fetch(
             `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`,
             {
-                // Кэшируем результат на 1 час, чтобы не делать лишних запросов
                 next: { revalidate: 3600 },
             }
         );
@@ -37,11 +35,9 @@ async function getInitialRates() {
     }
 }
 
-// Это наш Server Component
 export default async function RatesPage() {
     const { rates, allCurrencies, error } = await getInitialRates();
 
-    // Если на сервере произошла ошибка, показываем ее
     if (error) {
         return (
             <main className="flex flex-col items-center justify-start pt-12 sm:pt-16 p-4">
@@ -52,7 +48,6 @@ export default async function RatesPage() {
         );
     }
 
-    // Передаем полученные на сервере данные в клиентский компонент
     return (
         <main className="flex flex-col items-center justify-start pt-12 sm:pt-16 p-4">
             <div className="w-full max-w-4xl">

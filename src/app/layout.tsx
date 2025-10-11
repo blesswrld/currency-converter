@@ -4,16 +4,13 @@ import { Toaster } from "sonner";
 import Header from "@/components/Header";
 import "./globals.css";
 
-// Инициализируем шрифт Inter с нужными настройками
 const inter = Inter({
     subsets: ["latin", "cyrillic"],
     display: "swap",
     variable: "--font-inter",
 });
 
-// Определяем метаданные для всего приложения
 export const metadata: Metadata = {
-    // Основные метаданные
     title: "Конвертер Валют | Онлайн калькулятор курсов",
     description:
         "Быстрый и удобный онлайн-конвертер валют. Переводите доллары, евро, рубли и другие мировые валюты в реальном времени по актуальному курсу.",
@@ -21,12 +18,9 @@ export const metadata: Metadata = {
         "конвертер валют, курс валют, обмен валют, калькулятор валют, онлайн, USD, EUR, RUB",
     authors: [{ name: "Tamerlan (blesswrld)" }],
 
-    // Ссылка на manifest.json для PWA
     manifest: "/favicon/manifest.json",
 
-    // Иконки для всех платформ
     icons: {
-        // Стандартные иконки для браузеров
         icon: [
             { url: "/favicon/favicon.ico", sizes: "any" },
             {
@@ -40,7 +34,6 @@ export const metadata: Metadata = {
                 sizes: "32x32",
             },
         ],
-        // Иконки для Apple устройств
         apple: [
             { url: "/favicon/apple-icon-57x57.png", sizes: "57x57" },
             { url: "/favicon/apple-icon-60x60.png", sizes: "60x60" },
@@ -52,7 +45,6 @@ export const metadata: Metadata = {
             { url: "/favicon/apple-icon-152x152.png", sizes: "152x152" },
             { url: "/favicon/apple-icon-180x180.png", sizes: "180x180" },
         ],
-        // Иконки для Android и других платформ
         other: [
             {
                 rel: "android-chrome-192x192",
@@ -63,7 +55,6 @@ export const metadata: Metadata = {
     },
 };
 
-// Экспорт для настроек viewport
 export const viewport: Viewport = {
     themeColor: "#0F172A",
     width: "device-width",

@@ -4,7 +4,6 @@
 
 import { useState, useEffect, useRef } from "react";
 
-// Карта для сопоставления валют и флагов
 export const COUNTRY_CODE_MAP: Record<string, string> = {
     // A
     AED: "ae",
@@ -239,7 +238,6 @@ const CurrencyIcon = ({
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
 
-    // Создаем ref для доступа к DOM-элементу img
     const imgRef = useRef<HTMLImageElement>(null);
     const countryCode = COUNTRY_CODE_MAP[code];
 
@@ -248,7 +246,6 @@ const CurrencyIcon = ({
         setHasError(false);
 
         const imgElement = imgRef.current;
-        // Проверяем, существует ли элемент и загружен ли он уже (из кэша)
         if (imgElement && imgElement.complete) {
             setIsLoading(false);
         }
@@ -262,11 +259,11 @@ const CurrencyIcon = ({
         <div className={className}>
             {isLoading && <Loader className="w-full h-full" />}
             <img
-                ref={imgRef} // Привязываем ref к элементу
+                ref={imgRef}
                 src={`https://flagcdn.com/w40/${countryCode}.png`}
                 alt={`${code} flag`}
                 className={isLoading ? "hidden" : "block w-full h-auto"}
-                onLoad={() => setIsLoading(false)} // Этот обработчик сработает для незакэшированных изображений
+                onLoad={() => setIsLoading(false)}
                 onError={() => {
                     setIsLoading(false);
                     setHasError(true);

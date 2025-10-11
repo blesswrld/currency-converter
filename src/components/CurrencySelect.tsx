@@ -14,7 +14,7 @@ type Currency = {
 };
 
 interface CurrencySelectProps {
-    id: string; // id используется для связи
+    id: string;
     label: string;
     value: string;
     onChange: (v: string) => void;
@@ -29,11 +29,10 @@ const CurrencySelect = ({
     currencies,
 }: CurrencySelectProps) => {
     const selectedCurrency = currencies.find((c) => c.code === value);
-    const labelId = `${id}-label`; // Создаем уникальный id для лейбла
+    const labelId = `${id}-label`;
 
     return (
         <div>
-            {/* Добавляем id к лейблу */}
             <label
                 id={labelId}
                 className="block text-sm font-medium text-slate-400 mb-1.5"
@@ -41,7 +40,6 @@ const CurrencySelect = ({
                 {label}
             </label>
             <Select.Root value={value} onValueChange={onChange}>
-                {/* Добавляем id и aria-labelledby к триггеру */}
                 <Select.Trigger
                     id={id}
                     aria-labelledby={labelId}

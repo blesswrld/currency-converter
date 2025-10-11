@@ -4,9 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import HistoryChart from "@/components/HistoryChart";
-import CurrencySelect from "./CurrencySelect"; // Импортируем кастомный селект
+import CurrencySelect from "./CurrencySelect";
 
-// Определяем тип Currency
 type Currency = {
     code: string;
     name: string;
@@ -36,7 +35,6 @@ const SwapIcon = () => (
 export default function CurrencyConverter() {
     const [amount, setAmount] = useState(1);
 
-    // --- Инициализируем состояние безопасными значениями по умолчанию ---
     const [fromCurrency, setFromCurrency] = useState("USD");
     const [toCurrency, setToCurrency] = useState("RUB");
 
@@ -48,14 +46,10 @@ export default function CurrencyConverter() {
 
     const isInitialMount = useRef(true);
 
-    // Этот useEffect теперь будет сохранять в localStorage, пропуская первый рендер
     useEffect(() => {
-        // Если это первый рендер, мы просто меняем флаг и выходим.
-        // Это предотвращает перезапись localStorage значениями по умолчанию.
         if (isInitialMount.current) {
             isInitialMount.current = false;
         } else {
-            // На всех последующих рендерах (после изменений) мы сохраняем данные.
             if (typeof window !== "undefined") {
                 localStorage.setItem("fromCurrency", fromCurrency);
                 localStorage.setItem("toCurrency", toCurrency);
@@ -63,15 +57,12 @@ export default function CurrencyConverter() {
         }
     }, [fromCurrency, toCurrency]);
 
-    // --- Этот useEffect читает из localStorage и загружает данные ---
     useEffect(() => {
-        // Сначала восстанавливаем значения из localStorage
         const savedFrom = localStorage.getItem("fromCurrency");
         const savedTo = localStorage.getItem("toCurrency");
         if (savedFrom) setFromCurrency(savedFrom);
         if (savedTo) setToCurrency(savedTo);
 
-        // Затем загружаем данные API
         const fetchData = async () => {
             setIsLoading(true);
             setError(null);
@@ -114,10 +105,8 @@ export default function CurrencyConverter() {
             }
         };
         fetchData();
-        // Пустой массив зависимостей, чтобы этот эффект выполнился один раз при монтировании
     }, []);
 
-    // Эффект для пересчета результата при изменении входных данных
     useEffect(() => {
         if (Object.keys(rates).length === 0) return;
 
@@ -125,29 +114,24 @@ export default function CurrencyConverter() {
         const rateTo = rates[toCurrency];
 
         if (rateFrom && rateTo) {
-            // Базовая валюта в API - USD. Конвертируем через нее.
             const valueInUsd = amount / rateFrom;
             setResult(valueInUsd * rateTo);
         }
     }, [amount, fromCurrency, toCurrency, rates]);
 
-    // Функция для обмена валют местами
     const handleSwap = () => {
         setFromCurrency(toCurrency);
         setToCurrency(fromCurrency);
     };
 
-    // Функция-обработчик для контроля ввода суммы
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        // Позволяем очищать поле, приравнивая к 0
         if (value === "") {
             setAmount(0);
             return;
         }
         const numericValue = Number(value);
 
-        // Если значение превышает лимит, показываем тостер и выходим
         if (numericValue > MAX_ALLOWED_AMOUNT) {
             toast.error("Превышено максимально допустимое значение.");
             return;
@@ -155,7 +139,6 @@ export default function CurrencyConverter() {
         if (numericValue >= 0) setAmount(numericValue);
     };
 
-    // --- Обработчик фокуса ---
     const handleAmountFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         e.target.select();
     };
@@ -183,15 +166,12 @@ export default function CurrencyConverter() {
                             id="amount"
                             type="number"
                             value={amount}
-                            // Используем функцию и добавляем min атрибут
                             onChange={handleAmountChange}
-                            // Добавляем обработчик onFocus
                             onFocus={handleAmountFocus}
                             min="0"
                             className="w-full bg-[#2D3748] border-transparent rounded-lg p-2.5 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                         />
                     </div>
-                    {/* Передаем id, который теперь будет использоваться для связывания */}
                     <CurrencySelect
                         id="from-currency"
                         label="Из"
@@ -225,7 +205,6 @@ export default function CurrencyConverter() {
                     </div>
                 ) : (
                     result !== null && (
-                        // key={result} заставляет анимацию проигрываться при каждом изменении результата
                         <motion.div
                             key={result}
                             initial={{ opacity: 0, y: 20 }}
@@ -243,7 +222,6 @@ export default function CurrencyConverter() {
                                 })}{" "}
                                 {toCurrency}
                             </p>
-                            {/* --- Обратный курс --- */}
                             {amount > 0 && result > 0 && (
                                 <p className="text-sm text-slate-500 mt-1">
                                     1 {toCurrency} ={" "}
@@ -256,7 +234,6 @@ export default function CurrencyConverter() {
                 )}
             </div>
 
-            {/* --- График истории --- */}
             {!isLoading && (
                 <HistoryChart
                     fromCurrency={fromCurrency}

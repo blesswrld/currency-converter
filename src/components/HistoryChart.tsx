@@ -12,10 +12,9 @@ import {
 } from "recharts";
 import { format, subDays } from "date-fns";
 
-// Типизация для одной точки данных на графике.
 type ChartData = {
-    date: string; // Дата в формате "Mmm d"
-    rate: number; // Курс валюты в этот день
+    date: string;
+    rate: number;
 };
 
 interface HistoryChartProps {
@@ -23,7 +22,6 @@ interface HistoryChartProps {
     toCurrency: string;
 }
 
-// Компонент для создания кастомного, стилизованного Tooltip
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -39,7 +37,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-// Компонент для отображения графика истории курса валют за последние 30 дней.
 export default function HistoryChart({
     fromCurrency,
     toCurrency,
@@ -65,14 +62,9 @@ export default function HistoryChart({
                 const data = await response.json();
                 const rate = data.rates[toCurrency];
 
-                // ВАЖНО: API ExchangeRate (бесплатный тариф) не предоставляет исторические данные.
-                // Поэтому мы получаем только *текущий* курс и симулируем его колебания за последние 30 дней.
-                // Это сделано для демонстрации работы компонента графика.
                 const historyData: ChartData[] = [];
-                // Цикл работает для 30 дней (от 29 до 0).
                 for (let i = 29; i >= 0; i--) {
                     const date = subDays(new Date(), i);
-                    // Добавляем небольшую случайность для имитации колебаний курса (+/- 1%)
                     const simulatedRate =
                         rate * (1 + (Math.random() - 0.5) * 0.02);
                     historyData.push({
@@ -114,7 +106,6 @@ export default function HistoryChart({
     }
 
     return (
-        // ResponsiveContainer обеспечивает адаптивность графика под размер родительского элемента
         <div className="w-full h-48 mt-4">
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart
